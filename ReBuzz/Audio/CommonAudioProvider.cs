@@ -81,6 +81,8 @@ namespace ReBuzz.Audio
 
             int algorithm = registryEx.Read("WorkAlgorithm", 1, "Settings");
             int threadCount = registryEx.Read("AudioThreads", 4, "Settings");
+            ReBuzz.Core.StallRecorder.CtxAudioThreads = threadCount;
+            ReBuzz.Core.StallRecorder.CtxFillThread = Global.EngineSettings.AudioBufferFillThread ? 1 : 0;
 
             if (algorithm == 0 || algorithm == 1)
             {
@@ -279,7 +281,11 @@ namespace ReBuzz.Audio
                 double elapsedMs = (nowTicks - deadlineStartTicks) * deadlineTicksToMs;
                 double deadlineMs = (count / OutputChannels) / (double)deadlineSampleRate * 1000.0;
                 if (nowTicks * deadlineTicksToMs > DeadlineWarmupMs && elapsedMs > deadlineMs)
-                    ReBuzzCore.RecordDeadlineMiss((long)((elapsedMs - deadlineMs) * 1000.0));
+                {
+                    long __overrunUs = (long)((elapsedMs - deadlineMs) * 1000.0);
+                    ReBuzzCore.RecordDeadlineMiss(__overrunUs);
+                    ReBuzz.Core.StallRecorder.OnDeadlineMiss(__overrunUs, System.Diagnostics.Stopwatch.GetTimestamp());
+                }
             }
 
             return count - (countRemaining * stereoChannels);

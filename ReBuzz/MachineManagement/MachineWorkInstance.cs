@@ -637,6 +637,7 @@ namespace ReBuzz.MachineManagement
 
         internal void TickAndWork(int nSamples, bool resetToNoValue = false)
         {
+            long __stallT0 = ReBuzz.Core.StallRecorder.Armed ? System.Diagnostics.Stopwatch.GetTimestamp() : 0L;
             if (Machine.Ready)
             {
                 if (Machine.updateWaveInfo)
@@ -671,6 +672,9 @@ namespace ReBuzz.MachineManagement
                 //    Machine.IsActive = Machine.GetActivity(nSamples);
                 //}
             }
+
+            if (__stallT0 != 0L)
+                ReBuzz.Core.StallRecorder.OnWorkComplete(Machine, __stallT0, System.Diagnostics.Stopwatch.GetTimestamp());
         }
     }
 }
