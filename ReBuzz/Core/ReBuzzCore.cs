@@ -1928,6 +1928,12 @@ namespace ReBuzz.Core
         public long DeadlineMissCount => DeadlineMisses;
         public long DeadlineWorstOverrunMicros => DeadlineWorstOverrunUs;
 
+        // ─── Stage-2 stall snapshots (PP2 reads these by reflection) ────────
+        public bool StallCaptureArmed { get => StallRecorder.Armed; set => StallRecorder.SetArmed(value); }
+        public long StallSnapshotCount => StallRecorder.StallSnapshotWriteIndex;
+        public System.Array StallSnapshotRing => StallRecorder.StallSnapshotRing;
+        public void ResetStallSnapshots() => StallRecorder.Reset();
+
         public void ResetAudioDropoutCounters()
         {
             System.Threading.Interlocked.Exchange(ref DriverResets, 0);
